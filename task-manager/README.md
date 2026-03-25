@@ -18,6 +18,7 @@ This project perfectly fulfills all core requirements and **all bonus challenges
 
 ### 2. UI Design & Responsiveness 
 - **Premium Interface**: A modern, glassmorphic UI utilizing strict CSS custom variables to guarantee perfect paddings, margins, shadows, and hover micro-animations regardless of browser environments.
+- **Custom Modals & Spinners**: Avoided native browser `window.confirm` dialogues by building premium React UI modals. Implemented centered, full-screen Lucide React Loading Spinners for all asynchronous data fetching to drastically improve perceived performance.
 - **Complete Responsiveness**: Custom utility classes selectively handle layouts for smaller devices (horizontal scrolling for tables, wrapping flexboxes, hidden non-essential navbar text) keeping the Desktop UI flawless while actively supporting mobile.
 - **Dark Mode**: A fully featured dark mode toggle using React State and CSS variable injection, persisting across reloads.
 
@@ -29,6 +30,8 @@ This project perfectly fulfills all core requirements and **all bonus challenges
 - ⚡ **Real-time Updates (Socket.io)**: A robust WebSocket implementation broadcasted globally. When a Manager assigns or updates a task, all connected clients instantly receive the live DOM update without polling.
 - 🖱️ **Drag-and-Drop Kanban**: Implemented using `@hello-pangea/dnd` for fluid, physics-based dragging. Status updates immediately sync with the database and bounce across WebSockets.
 - 📄 **Pagination**: Endpoint APIs (`/api/tasks`) accept `page` and `limit` queries to optimize heavy loads.
+- 🌟 **AI Integration (OpenAI Smart Rewrite)**: Connected the `gpt-3.5-turbo` API to the Task Creation form to automatically rewrite user task descriptions into clean, professional content.
+- 🎙️ **AI Integration (Speech-to-Text)**: Added native `SpeechRecognition` Browser APIs to allow managers to dictate task instructions via microphone, converting them to text instantly.
 
 ---
 
@@ -77,16 +80,10 @@ npm run dev
 
 ## 🤖 AI Model Documentation
 
-### AI Usage in Development
-This application does not feature user-facing AI models inside the app (e.g., text generation APIs). However, AI tooling (Google Gemini Pro / Antigravity Agentic architecture) was utilized during the *development lifecycle* to:
+### Bonus AI Feature Implementations
+To demonstrate creativity and integration skills, this application features native AI integrations directly inside the Task Creation workflow:
 
-1. **Scaffold Boilerplates**: Rapidly generate the Express.js routing structures, Mongoose models, and React context hooks.
-2. **Refine CSS Aesthetics**: Iteratively transform standard Tailwind structures into the highly-customized, responsive, custom-CSS-variable layout to ensure pixel-perfect fidelity and robust dark mode toggling.
-3. **Debug WebSockets**: Resolve race conditions regarding React strict-mode double-mounting with Socket.io listeners.
+1. **OpenAI Smart Rewrite (`gpt-3.5-turbo`)**: A "Sparkles" button inside the Task Description box seamlessly pipes raw user input to a Node.js API endpoint connected to OpenAI. The model processes the prompt to fix grammar, remove fluff, and instantly replace the raw text with a clean, professional, and actionable task description.
+2. **Native Speech-to-Text**: A dedicated Microphone button utilizes the `window.SpeechRecognition` Browser API to allow managers to dictate complex task instructions verbally, converting them to text in real-time.
 
-All generated logic was strictly reviewed to ensure it enforces proper RESTful patterns, avoids anti-patterns, and maintains high enterprise security standards.
-
----
-
-## 📹 Demo Submission Reminder
-*Note to candidate: Ensure you record your 5-minute screen-share video walking through the web app, explaining the functionality, design choices, and AI integration as specified in the assignment prompt before submitting!*
+*Note: AI Tooling (Google Gemini Pro) was also utilized during the development lifecycle to rapidly scaffold Mongoose models and refine the CSS Custom Variable aesthetic framework.*

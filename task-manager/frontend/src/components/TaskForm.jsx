@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { X, Loader2, AlignLeft, Tag, Calendar, User, BarChart2, Activity } from 'lucide-react';
-import { getUsers } from '../api';
+import { X, Loader2, AlignLeft, Tag, Calendar, User, BarChart2, Activity, Sparkles, Mic } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { getUsers, rewriteTaskDescription } from '../api';
 import { useAuthStore } from '../store/authStore';
 
 const defaultForm = {
@@ -87,6 +88,43 @@ const TaskForm = ({ initial, onSubmit, onClose }) => {
   );
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+
+  const handleRewrite = async () => {
+    if (!form.description) return;
+    setLoadingAI(true);
+    try {
+      const { data } = await rewriteTaskDescription(form.description);
+      setForm((p) => ({ ...p, description: data.result }));
+      toast.success('Description rewritten by AI ✨');
+    } catch (err) {
+      toast.error('Failed to rewrite description');
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
+  const handleSpeech = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Speech recognition not supported in your browser');
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setForm((p) => ({ ...p, description: (p.description + ' ' + transcript).trim() }));
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    
+    recognition.start();
+  };
 
   useEffect(() => {
     if (isManager) {
@@ -162,21 +200,57 @@ const TaskForm = ({ initial, onSubmit, onClose }) => {
           </Field>
 
           <Field label="Description" icon={AlignLeft}>
-            <textarea
-              name="description" value={form.description} onChange={handleChange} rows={2}
-              placeholder="Add more context or details…"
-              style={{ ...inputStyle, resize: 'none', lineHeight: 1.5, minHeight: '60px' }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#6366f1';
-                e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)';
-                e.target.style.backgroundColor = 'var(--bg-card)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = 'var(--border-input)';
-                e.target.style.boxShadow = 'none';
-                e.target.style.backgroundColor = 'var(--bg-input)';
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <textarea
+                name="description" value={form.description} onChange={handleChange} rows={3}
+                placeholder="Add context or use the Mic to dictate…"
+                style={{ ...inputStyle, resize: 'none', lineHeight: 1.5, minHeight: '80px', paddingBottom: '40px' }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#6366f1';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)';
+                  e.target.style.backgroundColor = 'var(--bg-card)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--border-input)';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.backgroundColor = 'var(--bg-input)';
+                }}
+              />
+              
+              {/* AI Tools Bar */}
+              <div style={{
+                position: 'absolute', bottom: '8px', right: '8px',
+                display: 'flex', gap: '6px'
+              }}>
+                <button
+                  type="button" onClick={handleSpeech} title="Speech to text"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px',
+                    borderRadius: '6px', border: '1px solid var(--border)', backgroundColor: isListening ? '#ef4444' : 'var(--bg-card)', 
+                    color: isListening ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.2s',
+                    boxShadow: isListening ? '0 0 0 4px rgba(239, 68, 68, 0.2)' : 'none'
+                  }}
+                  onMouseEnter={(e) => { if(!isListening) { e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'; e.currentTarget.style.color = '#ef4444'; }}}
+                  onMouseLeave={(e) => { if(!isListening) { e.currentTarget.style.backgroundColor = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}}
+                >
+                  <Mic size={14} className={isListening ? "animate-pulse" : ""} />
+                </button>
+                <button
+                  type="button" onClick={handleRewrite} disabled={loadingAI || !form.description} title="Rewrite with AI"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', height: '28px', padding: '0 10px', gap: '6px',
+                    borderRadius: '6px', border: '1px solid rgba(168, 85, 247, 0.3)', backgroundColor: 'rgba(168, 85, 247, 0.1)', 
+                    color: '#a855f7', cursor: (loadingAI || !form.description) ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                    fontSize: '11px', fontWeight: 600, opacity: (!form.description && !loadingAI) ? 0.5 : 1
+                  }}
+                  onMouseEnter={(e) => { if(!loadingAI && form.description) { e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}}
+                  onMouseLeave={(e) => { if(!loadingAI && form.description) { e.currentTarget.style.backgroundColor = 'rgba(168, 85, 247, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}}
+                >
+                  {loadingAI ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                  Rewrite
+                </button>
+              </div>
+            </div>
           </Field>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

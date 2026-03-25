@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, ListFilter } from 'lucide-react';
+import { Plus, ListFilter, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getTasks, createTask, updateTask, deleteTask } from '../api';
 import { useTaskStore } from '../store/taskStore';
@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/authStore';
 import KanbanBoard from '../components/KanbanBoard';
 import TaskForm from '../components/TaskForm';
 import ActivityLogPanel from '../components/ActivityLogPanel';
+import ConfirmModal from '../components/ConfirmModal';
 import useSocket from '../hooks/useSocket';
 
 const TaskManagement = () => {
@@ -17,13 +18,16 @@ const TaskManagement = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   const fetchTasks = useCallback(() => {
     getTasks({ page, limit: 20, ...filters })
       .then((res) => setTasks(res.data.tasks, res.data))
-      .catch(() => toast.error('Failed to load tasks'));
+      .catch(() => toast.error('Failed to load tasks'))
+      .finally(() => setLoading(false));
   }, [page, filters, setTasks]);
 
   useEffect(() => {
@@ -52,14 +56,20 @@ const TaskManagement = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this task?')) return;
+  const handleDeleteClick = (id) => {
+    setDeletingId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId) return;
     try {
-      await deleteTask(id);
+      await deleteTask(deletingId);
       toast.success('Task deleted');
       fetchTasks();
     } catch {
       toast.error('Failed to delete task');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -71,6 +81,15 @@ const TaskManagement = () => {
       toast.error('Failed to update status');
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ height: 'calc(100vh - 70px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={40} className="animate-spin" style={{ color: '#6366f1', marginBottom: '16px' }} />
+        <p style={{ color: 'var(--text-secondary)', fontSize: '15px', fontWeight: 500 }}>Loading Task Board...</p>
+      </div>
+    );
+  }
 
   const selectStyle = {
     height: '40px',
@@ -156,7 +175,7 @@ const TaskManagement = () => {
             <KanbanBoard
               tasks={tasks}
               onEdit={(task) => setEditing(task)}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
               onStatusChange={handleStatusChange}
             />
           )}
@@ -194,6 +213,14 @@ const TaskManagement = () => {
 
       {showForm && <TaskForm onSubmit={handleCreate} onClose={() => setShowForm(false)} />}
       {editing && <TaskForm initial={editing} onSubmit={handleEdit} onClose={() => setEditing(null)} />}
+
+      <ConfirmModal
+        isOpen={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Task"
+        message="Are you sure you want to delete this task? This action cannot be undone."
+      />
     </div>
   );
 };

@@ -12,3 +12,4 @@ export const deleteTask = (id) => api.delete(`/tasks/${id}`);
 
 export const getUsers = () => api.get('/users');
 export const getLogs = (taskId) => api.get(`/logs/${taskId}`);
+export const rewriteTaskDescription = (text) => api.post('/ai/rewrite', { text });

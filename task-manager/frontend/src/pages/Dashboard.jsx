@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, CheckCheck, Clock, AlertCircle, TrendingUp } from 'lucide-react';
+import { Plus, CheckCheck, Clock, AlertCircle, TrendingUp, Loader2 } from 'lucide-react';
 import { getTasks } from '../api';
 import { useAuthStore } from '../store/authStore';
 import { useTaskStore } from '../store/taskStore';
@@ -49,11 +49,23 @@ const Dashboard = () => {
   const { tasks, setTasks } = useTaskStore();
   const isManager = user?.role === 'manager';
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     getTasks({ limit: 100 })
       .then((res) => setTasks(res.data.tasks, res.data))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [setTasks]);
+
+  if (loading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={40} className="animate-spin" style={{ color: '#6366f1', marginBottom: '16px' }} />
+        <p style={{ color: 'var(--text-secondary)', fontSize: '15px', fontWeight: 500 }}>Loading workspace...</p>
+      </div>
+    );
+  }
 
   const todo = tasks.filter((t) => t.status === 'todo').length;
   const inProgress = tasks.filter((t) => t.status === 'in_progress').length;
