@@ -33,7 +33,7 @@ const login = async ({ email, password }) => {
   }
   
   if (!(await user.comparePassword(password))) {
-    const err = new Error('Invalid email or password');
+    const err = new Error('Password is incorrect');
     err.statusCode = 401;
     throw err;
   }
