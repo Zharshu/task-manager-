@@ -46,7 +46,7 @@ Open your terminal and install dependencies for both sides:
 
 ```bash
 # Setup Backend
-cd backend
+cd task-manager/backend
 npm install
 cp .env.example .env
 
@@ -61,11 +61,11 @@ Open two separate terminal windows:
 
 ```bash
 # Terminal 1 — Backend (Runs on port 5000)
-cd backend
+cd task-manager/backend
 npm run dev
 
 # Terminal 2 — Frontend (Runs on port 5173)
-cd frontend
+cd task-manager/frontend
 npm run dev
 ```
 
