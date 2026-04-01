@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Clock, Activity } from 'lucide-react';
+import { Activity, Clock, Loader2 } from 'lucide-react';
 import { getLogs } from '../api';
 import { formatRelativeTime } from '../utils/helpers';
 
 const ActivityLogPanel = ({ taskId }) => {
-  const [logs, setLogs] = useState([]);
+  const [logs,    setLogs]    = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,29 +16,38 @@ const ActivityLogPanel = ({ taskId }) => {
   }, [taskId]);
 
   if (loading) {
-    return <div className="animate-pulse h-24 bg-gray-100 dark:bg-gray-700 rounded-lg" />;
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="skeleton h-10" />
+        ))}
+      </div>
+    );
   }
 
   return (
     <div>
-      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-3">
-        <Activity className="w-4 h-4" />
+      <h4 className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-4">
+        <Activity size={15} className="text-indigo-500" />
         Activity Log
       </h4>
+
       {logs.length === 0 ? (
-        <p className="text-xs text-gray-400 dark:text-gray-500">No activity yet.</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">No activity recorded yet.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {logs.map((log) => (
-            <li key={log._id} className="flex items-start gap-2 text-xs">
-              <div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-indigo-400 shrink-0" />
-              <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">{log.user?.name}</span>{' '}
-                <span className="text-gray-500 dark:text-gray-400">{log.action}</span>
-                <span className="flex items-center gap-1 text-gray-400 mt-0.5">
-                  <Clock className="w-2.5 h-2.5" />
+            <li key={log._id} className="flex items-start gap-2.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 dark:bg-indigo-500 shrink-0 mt-1.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">{log.user?.name}</span>{' '}
+                  {log.action}
+                </p>
+                <p className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                  <Clock size={10} />
                   {formatRelativeTime(log.createdAt)}
-                </span>
+                </p>
               </div>
             </li>
           ))}

@@ -2,70 +2,116 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Design Tokens ─────────────────────────────────────────── */
 :root {
-  --bg-page:       #f5f6fa;
-  --bg-card:       #ffffff;
-  --bg-input:      #f9fafb;
-  --bg-subtle:     #f8fafc;
-  --bg-subtle-amber: #fffbeb;
-  --bg-subtle-green: #f0fdf4;
-  
-  --border:        #e5e7eb;
-  --border-input:  #e5e7eb;
-
-  --text-primary:  #111827;
-  --text-secondary:#4b5563;
-  --text-muted:    #9ca3af;
-
-  --shadow-card:   0 1px 4px rgba(0,0,0,0.06);
-  --shadow-hover:  0 8px 24px rgba(0,0,0,0.1);
+  --sidebar-w: 260px;
 }
 
-html.dark {
-  color-scheme: dark;
-
-  --bg-page:       #0f1117;
-  --bg-card:       #1a1d27;
-  --bg-input:      #252836;
-  --bg-subtle:     rgba(100,116,139,0.1);
-  --bg-subtle-amber: rgba(245,158,11,0.1);
-  --bg-subtle-green: rgba(34,197,94,0.1);
-
-  --border:        #2e3145;
-  --border-input:  #363952;
-
-  --text-primary:  #f3f4f6;
-  --text-secondary:#9ca3af;
-  --text-muted:    #6b7280;
-
-  --shadow-card:   0 1px 4px rgba(0,0,0,0.3);
-  --shadow-hover:  0 8px 24px rgba(0,0,0,0.4);
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulseRing {
+  0%, 100% { box-shadow: 0 0 0 0px rgba(99,102,241,0.4); }
+  50%       { box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* ── Animation Utilities ───────────────────────────────────── */
+.slide-in  { animation: slideIn 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+.fade-in   { animation: fadeIn  0.2s ease both; }
+.scale-in  { animation: scaleIn 0.25s cubic-bezier(0.22,1,0.36,1) both; }
+.animate-spin  { animation: spin 0.75s linear infinite; }
+
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.10s; }
+.delay-3 { animation-delay: 0.15s; }
+.delay-4 { animation-delay: 0.20s; }
+.delay-5 { animation-delay: 0.25s; }
+.delay-6 { animation-delay: 0.30s; }
+.delay-7 { animation-delay: 0.35s; }
+.delay-8 { animation-delay: 0.40s; }
+
+/* ── Skeleton ──────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 0px, #e2e8f0 150px, #f1f5f9 300px);
+  background-size: 600px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
 }
+html.dark .skeleton {
+  background: linear-gradient(90deg, #1e293b 0px, #334155 150px, #1e293b 300px);
+  background-size: 600px 100%;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #cbd5e1; border-radius: 9999px; }
+html.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+/* ── Base ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-page);
-  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.2s, color 0.2s;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #64748b; border-radius: 3px; }
+::selection { background: #e0e7ff; color: #3730a3; }
+html.dark ::selection { background: rgba(99,102,241,0.3); color: #fff; }
 
-/* Responsive Utilities because React Inline Styles don't support media queries */
-.hidden-mobile { display: none !important; }
-@media (min-width: 640px) { .hidden-mobile { display: flex !important; } }
+:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; border-radius: 6px; }
 
-.hidden-mobile-block { display: none !important; }
-@media (min-width: 768px) { .hidden-mobile-block { display: block !important; } }
+/* ── Input Base ────────────────────────────────────────────── */
+.field-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.field-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  background: #fff;
+}
+.field-input::placeholder { color: #94a3b8; }
 
-.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+html.dark .field-input {
+  border-color: #1e293b;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+html.dark .field-input:focus {
+  border-color: #6366f1;
+  background: #0f172a;
+}
 
+/* ── Kanban column drop animation ──────────────────────────── */
+.kanban-drop-active {
+  box-shadow: inset 0 0 0 2px rgba(99,102,241,0.35) !important;
+}

@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useThemeStore } from './store/themeStore';
 import { useAuthStore } from './store/authStore';
 import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
+import AppLayout from './components/AppLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -13,37 +13,40 @@ const App = () => {
   const { dark, init } = useThemeStore();
   const { token } = useAuthStore();
 
-  // Apply persisted theme on mount
   useEffect(() => {
     init(dark);
   }, [dark, init]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
-      {token && <Navbar />}
-      <main>
-        <Routes>
-          <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />
-          <Route path="/signup" element={token ? <Navigate to="/dashboard" /> : <Signup />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      <Routes>
+        {/* Public routes — no layout */}
+        <Route path="/login"  element={token ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/signup" element={token ? <Navigate to="/dashboard" /> : <Signup />} />
+
+        {/* Protected routes — wrapped in AppLayout */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
                 <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
                 <TaskManagement />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to={token ? '/dashboard' : '/login'} />} />
-        </Routes>
-      </main>
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to={token ? '/dashboard' : '/login'} />} />
+      </Routes>
     </div>
   );
 };

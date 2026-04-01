@@ -1,29 +1,47 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, LayoutDashboard, CheckSquare, Moon, Sun, Layers } from 'lucide-react';
-import { useState } from 'react';
+import { LogOut, LayoutDashboard, CheckSquare, Moon, Sun, Layers, Menu, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
 
-const NavLink = ({ to, icon: Icon, children }) => {
+const NAV_LINKS = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/tasks',     icon: CheckSquare,     label: 'Tasks' },
+];
+
+const NavLink = ({ to, icon: Icon, label, onClick }) => {
   const { pathname } = useLocation();
   const active = pathname === to;
-  const [hovered, setHovered] = useState(false);
 
   return (
     <Link
       to={to}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
       style={{
-        display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px',
-        borderRadius: '8px', fontSize: '14px', fontWeight: 600,
-        textDecoration: 'none', transition: 'background 0.2s, color 0.2s',
-        backgroundColor: active ? 'rgba(79, 70, 229, 0.1)' : hovered ? 'var(--bg-subtle)' : 'transparent',
-        color: active ? '#4f46e5' : hovered ? 'var(--text-primary)' : 'var(--text-secondary)',
+        display: 'flex', alignItems: 'center', gap: '8px',
+        padding: '8px 14px', borderRadius: 'var(--radius-md)',
+        fontSize: '14px', fontWeight: 600, textDecoration: 'none',
+        transition: 'background var(--transition-base), color var(--transition-base)',
+        backgroundColor: active ? 'var(--color-primary-50)' : 'transparent',
+        color: active ? 'var(--color-primary-600)' : 'var(--text-secondary)',
+        border: active ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+        position: 'relative',
+      }}
+      onMouseEnter={(e) => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+          e.currentTarget.style.color = 'var(--text-primary)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'transparent';
+          e.currentTarget.style.color = 'var(--text-secondary)';
+        }
       }}
     >
-      <Icon size={16} />
-      {children}
+      <Icon size={15} />
+      {label}
     </Link>
   );
 };
@@ -32,8 +50,28 @@ const Navbar = () => {
   const { user, logout } = useAuthStore();
   const { dark, toggle } = useThemeStore();
   const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerRef = useRef(null);
+
+  // Close drawer on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (drawerRef.current && !drawerRef.current.contains(e.target)) {
+        setDrawerOpen(false);
+      }
+    };
+    if (drawerOpen) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [drawerOpen]);
+
+  // Lock body scroll when drawer open
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [drawerOpen]);
 
   const handleLogout = () => {
+    setDrawerOpen(false);
     logout();
     navigate('/login');
   };
@@ -43,96 +81,206 @@ const Navbar = () => {
     .map((w) => w[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase();
-
-  const [tHover, setTHover] = useState(false);
-  const [lHover, setLHover] = useState(false);
+    .toUpperCase() || '?';
 
   return (
-    <header style={{
-      position: 'sticky', top: 0, zIndex: 50,
-      borderBottom: '1px solid var(--border)',
-      backgroundColor: 'var(--bg-card)',
-      opacity: 0.95, backdropFilter: 'blur(8px)'
-    }}>
-      <div style={{
-        maxWidth: '1280px', margin: '0 auto', padding: '0 16px',
-        height: '60px', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', gap: '16px'
+    <>
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        borderBottom: '1px solid var(--border)',
+        backgroundColor: 'var(--bg-card)',
+        backdropFilter: 'blur(12px)',
+        boxShadow: 'var(--shadow-nav)',
+        transition: 'background var(--transition-slow)',
       }}>
-        {/* Brand */}
-        <Link to="/dashboard" style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          fontWeight: 800, fontSize: '18px', color: '#4f46e5',
-          textDecoration: 'none', flexShrink: 0
+        <div style={{
+          maxWidth: '1280px', margin: '0 auto', padding: '0 20px',
+          height: '62px', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', gap: '16px',
         }}>
-          <div style={{
-            width: '28px', height: '28px', backgroundColor: '#4f46e5',
-            borderRadius: '8px', display: 'flex', alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Layers size={16} color="#fff" />
-          </div>
-          TaskFlow
-        </Link>
 
-        {/* Nav links */}
-        <nav className="hidden-mobile" style={{ alignItems: 'center', gap: '4px' }}>
-          <NavLink to="/dashboard" icon={LayoutDashboard}>Dashboard</NavLink>
-          <NavLink to="/tasks" icon={CheckSquare}>Tasks</NavLink>
+          {/* Brand */}
+          <Link to="/dashboard" style={{
+            display: 'flex', alignItems: 'center', gap: '9px',
+            fontWeight: 800, fontSize: '17px', color: 'var(--color-primary-600)',
+            textDecoration: 'none', flexShrink: 0, letterSpacing: '-0.02em',
+          }}>
+            <div style={{
+              width: '30px', height: '30px',
+              background: 'linear-gradient(135deg, var(--color-primary-600) 0%, #7c3aed 100%)',
+              borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', boxShadow: '0 2px 8px rgba(79,70,229,0.35)',
+            }}>
+              <Layers size={16} color="#fff" />
+            </div>
+            TaskFlow
+          </Link>
+
+          {/* Desktop Nav links */}
+          <nav className="hidden-mobile" style={{ alignItems: 'center', gap: '4px' }}>
+            {NAV_LINKS.map((link) => (
+              <NavLink key={link.to} {...link} />
+            ))}
+          </nav>
+
+          {/* Right side */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggle}
+              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              style={{
+                width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)',
+                cursor: 'pointer', transition: 'background var(--transition-base), color var(--transition-base), border-color var(--transition-base)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+                e.currentTarget.style.borderColor = 'var(--border-focus)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-input)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}
+            >
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            {/* Separator */}
+            <div style={{ height: '22px', width: '1px', backgroundColor: 'var(--border)' }} />
+
+            {/* User avatar + info */}
+            <div className="hidden-mobile" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="avatar avatar-md" style={{ boxShadow: '0 0 0 2px var(--border)' }}>
+                {initials}
+              </div>
+              <div className="hidden-mobile-block">
+                <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+                  {user?.name}
+                </p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'capitalize', margin: '2px 0 0' }}>
+                  {user?.role}
+                </p>
+              </div>
+            </div>
+
+            {/* Logout — desktop only */}
+            <button
+              onClick={handleLogout}
+              title="Logout"
+              className="hidden-mobile"
+              style={{
+                width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 'var(--radius-md)', border: '1px solid transparent',
+                backgroundColor: 'transparent', color: 'var(--text-muted)',
+                cursor: 'pointer', transition: 'background var(--transition-base), color var(--transition-base), border-color var(--transition-base)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-subtle-red)';
+                e.currentTarget.style.color = '#ef4444';
+                e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--text-muted)';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
+            >
+              <LogOut size={16} />
+            </button>
+
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setDrawerOpen((o) => !o)}
+              aria-label={drawerOpen ? 'Close menu' : 'Open menu'}
+              style={{
+                width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
+                backgroundColor: drawerOpen ? 'var(--bg-subtle)' : 'var(--bg-input)',
+                color: 'var(--text-secondary)', cursor: 'pointer',
+                transition: 'background var(--transition-base)',
+              }}
+              className="visible-mobile"
+            >
+              {drawerOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Drawer Overlay */}
+      {drawerOpen && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 40,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            backdropFilter: 'blur(2px)',
+            animation: 'fadeIn 0.15s ease both',
+          }}
+        />
+      )}
+
+      {/* Mobile Drawer Panel */}
+      <div
+        ref={drawerRef}
+        style={{
+          position: 'fixed', top: '62px', right: 0, bottom: 0,
+          width: '260px', zIndex: 41,
+          backgroundColor: 'var(--bg-card)',
+          borderLeft: '1px solid var(--border)',
+          boxShadow: '-8px 0 24px rgba(0,0,0,0.15)',
+          transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.25s cubic-bezier(0.22,1,0.36,1)',
+          display: 'flex', flexDirection: 'column',
+        }}
+      >
+        {/* User info in drawer */}
+        <div style={{
+          padding: '20px', borderBottom: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', gap: '12px',
+        }}>
+          <div className="avatar avatar-md">
+            {initials}
+          </div>
+          <div>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+              {user?.name}
+            </p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'capitalize', margin: '2px 0 0' }}>
+              {user?.role}
+            </p>
+          </div>
+        </div>
+
+        {/* Drawer nav links */}
+        <nav style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+          {NAV_LINKS.map((link) => (
+            <NavLink key={link.to} {...link} onClick={() => setDrawerOpen(false)} />
+          ))}
         </nav>
 
-        {/* Right side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            onClick={toggle}
-            onMouseEnter={() => setTHover(true)}
-            onMouseLeave={() => setTHover(false)}
-            style={{
-              width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: '8px', border: 'none', cursor: 'pointer', transition: 'background 0.2s',
-              backgroundColor: tHover ? 'var(--bg-subtle)' : 'transparent',
-              color: 'var(--text-secondary)'
-            }}
-            aria-label="Toggle dark mode"
-          >
-            {dark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-
-          <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border)' }} />
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '32px', height: '32px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #6366f1 0%, #9333ea 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: '12px', fontWeight: 700, boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-            }}>
-              {initials}
-            </div>
-            <div className="hidden-mobile-block">
-              <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, lineHeight: 1 }}>{user?.name}</p>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'capitalize', margin: '2px 0 0 0' }}>{user?.role}</p>
-            </div>
-          </div>
-
+        {/* Drawer footer */}
+        <div style={{ padding: '12px', borderTop: '1px solid var(--border)' }}>
           <button
             onClick={handleLogout}
-            onMouseEnter={() => setLHover(true)}
-            onMouseLeave={() => setLHover(false)}
             style={{
-              width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: '8px', border: 'none', cursor: 'pointer', transition: 'background 0.2s, color 0.2s',
-              backgroundColor: lHover ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
-              color: lHover ? '#ef4444' : 'var(--text-secondary)'
+              width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px',
+              borderRadius: 'var(--radius-md)', border: '1px solid rgba(239,68,68,0.2)',
+              backgroundColor: 'var(--bg-subtle-red)', color: '#ef4444',
+              fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              transition: 'background var(--transition-base)',
             }}
-            aria-label="Logout"
           >
-            <LogOut size={18} />
+            <LogOut size={16} />
+            Sign out
           </button>
         </div>
       </div>
-    </header>
+    </>
   );
 };
 

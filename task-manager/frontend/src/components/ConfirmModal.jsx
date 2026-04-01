@@ -5,59 +5,33 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
 
   return (
     <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center',
-        justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(4px)',
-      }}
     >
-      <div
-        style={{
-          backgroundColor: 'var(--bg-card)', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
-          width: '100%', maxWidth: '380px', border: '1px solid var(--border)', overflow: 'hidden',
-          animation: 'fadeIn 0.2s ease-out'
-        }}
-      >
-        <div style={{ padding: '28px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ 
-            width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', marginBottom: '18px',
-            boxShadow: '0 0 0 6px rgba(239, 68, 68, 0.05)'
-          }}>
-            <AlertTriangle size={28} />
+      <div className="scale-in bg-white dark:bg-slate-900 rounded-2xl shadow-2xl shadow-black/30 w-full max-w-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+
+        {/* Body */}
+        <div className="px-6 pt-7 pb-6 flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4 ring-4 ring-red-50 dark:ring-red-500/5">
+            <AlertTriangle size={22} className="text-red-500 dark:text-red-400" />
           </div>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px 0' }}>{title}</h2>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{message}</p>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white mb-2">{title}</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</p>
         </div>
-        
-        <div style={{ 
-          display: 'flex', gap: '12px', padding: '16px 24px', backgroundColor: 'var(--bg-subtle)', 
-          borderTop: '1px solid var(--border)' 
-        }}>
+
+        {/* Footer */}
+        <div className="flex gap-3 px-6 pb-6">
           <button
             onClick={onClose}
-            style={{
-              flex: 1, padding: '10px', borderRadius: '10px', border: '1.5px solid var(--border)',
-              backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600,
-              cursor: 'pointer', transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-input)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}
+            className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-150"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            style={{
-              flex: 1, padding: '10px', borderRadius: '10px', border: 'none',
-              backgroundColor: '#ef4444', color: '#fff', fontSize: '13px', fontWeight: 600,
-              cursor: 'pointer', transition: 'background 0.2s', boxShadow: '0 4px 14px rgba(239,68,68,0.3)',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dc2626'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ef4444'; }}
+            className="flex-1 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold shadow-sm shadow-red-200 dark:shadow-red-900/30 transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0"
           >
-            Yes, Delete
+            Delete
           </button>
         </div>
       </div>
